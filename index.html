@@ -47,6 +47,26 @@
             Semi-Limited
           </button>
         </div>
+        <div class="sort-toolbar hidden" id="sortToolbar" aria-label="Banlist sorting">
+          <button class="sort-button" id="startSortButton" type="button">
+            Arrange cards
+          </button>
+          <div class="sort-actions hidden" id="sortActions">
+            <span class="sort-summary" id="sortSummary">0 selected</span>
+            <button class="sort-button" id="alphabetizeSelectedButton" type="button">
+              A–Z selected
+            </button>
+            <button class="sort-button" id="clearSelectionButton" type="button">
+              Clear
+            </button>
+            <button class="sort-button sort-save" id="saveOrderButton" type="button">
+              Save order
+            </button>
+            <button class="sort-button" id="cancelSortButton" type="button">
+              Cancel
+            </button>
+          </div>
+        </div>
         <div class="notice hidden" id="setupNotice" role="status"></div>
         <div
           class="card-grid category-grid"
@@ -98,7 +118,12 @@
           YGOPRODeck
         </a>.
       </p>
-      <button class="admin-entry-button" id="adminButton" type="button">Admin</button>
+      <div class="footer-actions">
+        <button class="admin-entry-button" id="themeButton" type="button">
+          Dark theme
+        </button>
+        <button class="admin-entry-button" id="adminButton" type="button">Admin</button>
+      </div>
     </footer>
 
     <dialog class="modal modal-small" id="loginDialog">

@@ -24,6 +24,10 @@ const state = {
   editingEntry: null,
   selectedOfficial: null,
   officialSearchTimer: null,
+  sorting: false,
+  sortingEntries: [],
+  selectedEntryIds: new Set(),
+  draggedEntryId: null,
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -31,6 +35,15 @@ const $ = (selector) => document.querySelector(selector);
 const elements = {
   categoryGrid: $("#categoryGrid"),
   setupNotice: $("#setupNotice"),
+  sortToolbar: $("#sortToolbar"),
+  startSortButton: $("#startSortButton"),
+  sortActions: $("#sortActions"),
+  sortSummary: $("#sortSummary"),
+  alphabetizeSelectedButton: $("#alphabetizeSelectedButton"),
+  clearSelectionButton: $("#clearSelectionButton"),
+  saveOrderButton: $("#saveOrderButton"),
+  cancelSortButton: $("#cancelSortButton"),
+  themeButton: $("#themeButton"),
   adminButton: $("#adminButton"),
   adminDock: $("#adminDock"),
   accountEmail: $("#accountEmail"),
@@ -100,6 +113,37 @@ const statusLabels = {
   semi_limited: { label: "Semi-limited", copies: "2 copies" },
 };
 
+function applyTheme(theme, persist = false) {
+  const selectedTheme = theme === "dark" ? "dark" : "light";
+  document.documentElement.dataset.theme = selectedTheme;
+  elements.themeButton.textContent =
+    selectedTheme === "dark" ? "Light theme" : "Dark theme";
+  elements.themeButton.setAttribute(
+    "aria-label",
+    `Switch to ${selectedTheme === "dark" ? "light" : "dark"} theme`,
+  );
+  document
+    .querySelector('meta[name="theme-color"]')
+    ?.setAttribute("content", selectedTheme === "dark" ? "#101216" : "#f7f7f5");
+  if (persist) {
+    try {
+      localStorage.setItem("banlist-theme", selectedTheme);
+    } catch {
+      // Theme persistence is optional when browser storage is unavailable.
+    }
+  }
+}
+
+function initializeTheme() {
+  let savedTheme = "light";
+  try {
+    savedTheme = localStorage.getItem("banlist-theme") || "light";
+  } catch {
+    // Keep the light default when browser storage is unavailable.
+  }
+  applyTheme(savedTheme);
+}
+
 function formatDate(value, fallback = "Not announced") {
   if (!value) return fallback;
   const date = new Date(value.includes("T") ? value : `${value}T00:00:00`);
@@ -142,7 +186,11 @@ async function api(path, options = {}) {
   try {
     response = await fetch(`${API_BASE}${path}`, { ...options, headers });
   } catch {
-    throw new Error("Could not reach the banlist server. Check the Worker URL and allowed origin.");
+    const siteAddress =
+      window.location.origin === "null" ? "this local file preview" : window.location.origin;
+    throw new Error(
+      `Could not reach the banlist server. It may be offline or blocking ${siteAddress}.`,
+    );
   }
 
   const isJson = response.headers.get("content-type")?.includes("application/json");
@@ -219,9 +267,67 @@ function imageWithFallback(url, alt) {
   return image;
 }
 
+function updateSortControls() {
+  const selectedCount = state.selectedEntryIds.size;
+  elements.sortSummary.textContent = `${selectedCount} selected`;
+  elements.alphabetizeSelectedButton.disabled = selectedCount < 2;
+  elements.clearSelectionButton.disabled = selectedCount === 0;
+  elements.startSortButton.classList.toggle("hidden", state.sorting);
+  elements.sortActions.classList.toggle("hidden", !state.sorting);
+  elements.categoryGrid.classList.toggle("sorting-grid", state.sorting);
+}
+
+function setEntrySelected(entryId, selected) {
+  if (selected) state.selectedEntryIds.add(entryId);
+  else state.selectedEntryIds.delete(entryId);
+  const card = [...elements.categoryGrid.querySelectorAll("[data-entry-id]")].find(
+    (item) => item.dataset.entryId === entryId,
+  );
+  card?.classList.toggle("is-selected", selected);
+  const checkbox = card?.querySelector(".sort-checkbox");
+  if (checkbox) checkbox.checked = selected;
+  updateSortControls();
+}
+
+function moveSortingEntry(entryId, offset) {
+  const currentIndex = state.sortingEntries.findIndex((entry) => entry.id === entryId);
+  const nextIndex = currentIndex + offset;
+  if (
+    currentIndex < 0 ||
+    nextIndex < 0 ||
+    nextIndex >= state.sortingEntries.length
+  ) {
+    return;
+  }
+  const [entry] = state.sortingEntries.splice(currentIndex, 1);
+  state.sortingEntries.splice(nextIndex, 0, entry);
+  renderBanlist();
+}
+
+function moveSortingEntryTo(entryId, targetId) {
+  if (!entryId || entryId === targetId) return;
+  const sourceIndex = state.sortingEntries.findIndex((entry) => entry.id === entryId);
+  const targetIndex = state.sortingEntries.findIndex((entry) => entry.id === targetId);
+  if (sourceIndex < 0 || targetIndex < 0) return;
+  const [entry] = state.sortingEntries.splice(sourceIndex, 1);
+  state.sortingEntries.splice(targetIndex, 0, entry);
+  renderBanlist();
+}
+
+function createMoveButton(label, accessibleLabel, entryId, offset) {
+  const button = document.createElement("button");
+  button.className = "sort-move-button";
+  button.type = "button";
+  button.textContent = label;
+  button.setAttribute("aria-label", accessibleLabel);
+  button.addEventListener("click", () => moveSortingEntry(entryId, offset));
+  return button;
+}
+
 function createCard(entry) {
   const card = document.createElement("article");
   card.className = "ban-card";
+  card.dataset.entryId = entry.id;
 
   const imageWrap = document.createElement("div");
   imageWrap.className = "ban-card-image";
@@ -233,7 +339,69 @@ function createCard(entry) {
   title.textContent = entry.name;
   body.append(title);
 
-  if (state.account && !state.account.mustChangePassword) {
+  if (state.sorting) {
+    const selected = state.selectedEntryIds.has(entry.id);
+    card.classList.add("sortable-card");
+    card.classList.toggle("is-selected", selected);
+    card.draggable = true;
+
+    const selector = document.createElement("label");
+    selector.className = "sort-selector";
+    const checkbox = document.createElement("input");
+    checkbox.className = "sort-checkbox";
+    checkbox.type = "checkbox";
+    checkbox.checked = selected;
+    checkbox.setAttribute("aria-label", `Select ${entry.name}`);
+    checkbox.addEventListener("change", () =>
+      setEntrySelected(entry.id, checkbox.checked),
+    );
+    const selectorText = document.createElement("span");
+    selectorText.textContent = "Select";
+    selector.append(checkbox, selectorText);
+    imageWrap.append(selector);
+
+    const moveControls = document.createElement("div");
+    moveControls.className = "sort-move-controls";
+    const currentIndex = state.sortingEntries.findIndex((item) => item.id === entry.id);
+    const earlier = createMoveButton(
+      "←",
+      `Move ${entry.name} earlier`,
+      entry.id,
+      -1,
+    );
+    earlier.disabled = currentIndex === 0;
+    const later = createMoveButton(
+      "→",
+      `Move ${entry.name} later`,
+      entry.id,
+      1,
+    );
+    later.disabled = currentIndex === state.sortingEntries.length - 1;
+    moveControls.append(earlier, later);
+    body.append(moveControls);
+
+    card.addEventListener("dragstart", (event) => {
+      state.draggedEntryId = entry.id;
+      card.classList.add("is-dragging");
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", entry.id);
+    });
+    card.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "move";
+    });
+    card.addEventListener("drop", (event) => {
+      event.preventDefault();
+      moveSortingEntryTo(
+        state.draggedEntryId || event.dataTransfer.getData("text/plain"),
+        entry.id,
+      );
+    });
+    card.addEventListener("dragend", () => {
+      state.draggedEntryId = null;
+      card.classList.remove("is-dragging");
+    });
+  } else if (state.account && !state.account.mustChangePassword) {
     const editButton = document.createElement("button");
     editButton.className = "edit-card-button";
     editButton.type = "button";
@@ -248,11 +416,15 @@ function createCard(entry) {
 
 function renderBanlist() {
   const label = statusLabels[state.category]?.label || "Banlist";
+  const entries = state.sorting
+    ? state.sortingEntries
+    : state.entries.filter((entry) => entry.status === state.category);
   renderRestrictionGrid(
     elements.categoryGrid,
-    state.entries.filter((entry) => entry.status === state.category),
+    entries,
     `No ${label} cards.`,
   );
+  updateSortControls();
 }
 
 function renderRestrictionGrid(grid, entries, emptyMessage) {
@@ -272,11 +444,71 @@ function renderRestrictionGrid(grid, entries, emptyMessage) {
   grid.append(fragment);
 }
 
+function startSorting() {
+  if (!state.account || state.account.mustChangePassword) return;
+  state.sorting = true;
+  state.sortingEntries = state.entries.filter(
+    (entry) => entry.status === state.category,
+  );
+  state.selectedEntryIds.clear();
+  renderBanlist();
+}
+
+function stopSorting(render = true) {
+  state.sorting = false;
+  state.sortingEntries = [];
+  state.selectedEntryIds.clear();
+  state.draggedEntryId = null;
+  if (render) renderBanlist();
+  else updateSortControls();
+}
+
+function alphabetizeSelectedEntries() {
+  if (state.selectedEntryIds.size < 2) return;
+  const collator = new Intl.Collator(undefined, {
+    sensitivity: "base",
+    numeric: true,
+  });
+  const alphabetical = state.sortingEntries
+    .filter((entry) => state.selectedEntryIds.has(entry.id))
+    .sort((left, right) => collator.compare(left.name, right.name));
+  let replacementIndex = 0;
+  state.sortingEntries = state.sortingEntries.map((entry) =>
+    state.selectedEntryIds.has(entry.id)
+      ? alphabetical[replacementIndex++]
+      : entry,
+  );
+  renderBanlist();
+  toast("Selected cards sorted alphabetically.");
+}
+
+async function saveEntryOrder() {
+  setBusy(elements.saveOrderButton, true, "Saving…");
+  try {
+    await api("/api/admin/order", {
+      method: "PUT",
+      body: JSON.stringify({
+        status: state.category,
+        entryIds: state.sortingEntries.map((entry) => entry.id),
+      }),
+    });
+    stopSorting(false);
+    await loadBanlist({ silent: true });
+    toast("Card order saved.");
+  } catch (error) {
+    toast(error.message, "error");
+  } finally {
+    setBusy(elements.saveOrderButton, false);
+    updateSortControls();
+  }
+}
+
 function updateCategory(category, animate = true) {
   if (!Object.hasOwn(statusLabels, category)) return;
   window.clearTimeout(elements.categoryGrid.switchTimer);
 
   const applyCategory = () => {
+    if (state.sorting) stopSorting(false);
     state.category = category;
     document.querySelectorAll(".category-tab").forEach((tab) => {
       const active = tab.dataset.category === category;
@@ -335,6 +567,7 @@ function setAccountSession(token, account) {
 
   const ready = Boolean(account && !account.mustChangePassword);
   elements.adminDock.classList.toggle("hidden", !ready);
+  elements.sortToolbar.classList.toggle("hidden", !ready);
   elements.adminButton.textContent = account ? "Panel" : "Admin";
   elements.manageAccessButton.classList.toggle("hidden", account?.role !== "owner");
   if (account) {
@@ -346,6 +579,7 @@ function setAccountSession(token, account) {
     elements.pendingBadge.classList.add("hidden");
     elements.pendingBadge.textContent = "0";
   }
+  if (!ready && state.sorting) stopSorting(false);
   renderBanlist();
 }
 
@@ -741,6 +975,25 @@ document.querySelectorAll("[data-auth-panel]").forEach((button) => {
   button.addEventListener("click", () => setAuthPanel(button.dataset.authPanel));
 });
 
+elements.themeButton.addEventListener("click", () => {
+  applyTheme(
+    document.documentElement.dataset.theme === "dark" ? "light" : "dark",
+    true,
+  );
+});
+
+elements.startSortButton.addEventListener("click", startSorting);
+elements.alphabetizeSelectedButton.addEventListener(
+  "click",
+  alphabetizeSelectedEntries,
+);
+elements.clearSelectionButton.addEventListener("click", () => {
+  state.selectedEntryIds.clear();
+  renderBanlist();
+});
+elements.saveOrderButton.addEventListener("click", saveEntryOrder);
+elements.cancelSortButton.addEventListener("click", () => stopSorting());
+
 elements.adminButton.addEventListener("click", () => {
   if (state.account?.mustChangePassword) openForcedPassword();
   else if (state.account) elements.adminDock.classList.remove("hidden");
@@ -1003,6 +1256,7 @@ elements.copyTemporaryPassword.addEventListener("click", async () => {
   }
 });
 
+initializeTheme();
 initializeCategoryTabs();
 loadBanlist();
 restoreSession();

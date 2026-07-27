@@ -12,8 +12,6 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <div class="noise" aria-hidden="true"></div>
-
     <header class="site-header">
       <a class="brand" href="#top" aria-label="Duel Ledger home">
         <span class="brand-mark" aria-hidden="true">DL</span>
@@ -24,78 +22,32 @@
       </a>
 
       <nav class="header-actions" aria-label="Main navigation">
-        <a href="#banlist">The list</a>
         <button class="button button-ghost" id="adminButton" type="button">
           Admin login
         </button>
       </nav>
     </header>
 
-    <main id="top">
-      <section class="hero">
-        <div class="hero-copy">
-          <p class="eyebrow">Community format · living ruleset</p>
-          <h1 id="listTitle">The cards that shape the format.</h1>
-          <p class="hero-description" id="listDescription">
-            A clear, current view of every forbidden, limited, and semi-limited
-            card in this format.
+    <main class="banlist-page" id="top">
+      <section class="list-intro">
+        <div class="list-intro-copy">
+          <p class="eyebrow">Current card restrictions</p>
+          <h1 id="listTitle">Banlist</h1>
+          <p id="listDescription">
+            Forbidden, Limited, and Semi-Limited cards for this format.
           </p>
-          <div class="hero-meta">
+        </div>
+
+        <div class="list-tools">
+          <div class="list-date">
             <span>
               <small>Effective</small>
               <strong id="effectiveDate">Not announced</strong>
             </span>
             <span>
-              <small>Last revised</small>
+              <small>Updated</small>
               <strong id="updatedDate">—</strong>
             </span>
-          </div>
-        </div>
-
-        <div class="hero-art" aria-hidden="true">
-          <div class="orbit orbit-one"></div>
-          <div class="orbit orbit-two"></div>
-          <div class="card-silhouette card-back"></div>
-          <div class="card-silhouette card-front">
-            <span>F / L</span>
-          </div>
-          <p>Build carefully.<br />Duel boldly.</p>
-        </div>
-      </section>
-
-      <section class="stats" aria-label="Banlist summary">
-        <article>
-          <span class="status-dot forbidden"></span>
-          <div>
-            <strong id="forbiddenCount">0</strong>
-            <span>Forbidden</span>
-          </div>
-        </article>
-        <article>
-          <span class="status-dot limited"></span>
-          <div>
-            <strong id="limitedCount">0</strong>
-            <span>Limited</span>
-          </div>
-        </article>
-        <article>
-          <span class="status-dot semi-limited"></span>
-          <div>
-            <strong id="semiLimitedCount">0</strong>
-            <span>Semi-limited</span>
-          </div>
-        </article>
-        <article class="stats-total">
-          <span class="mini-label">Total listed</span>
-          <strong id="totalCount">0</strong>
-        </article>
-      </section>
-
-      <section class="banlist-section" id="banlist">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Card index</p>
-            <h2>Current restrictions</h2>
           </div>
           <label class="search-box">
             <span class="search-icon" aria-hidden="true"></span>
@@ -108,25 +60,50 @@
             />
           </label>
         </div>
+      </section>
 
-        <div class="filter-row" role="group" aria-label="Filter by status">
-          <button class="filter-pill active" data-filter="all" type="button">
-            All cards
-          </button>
-          <button class="filter-pill" data-filter="forbidden" type="button">
-            Forbidden
-          </button>
-          <button class="filter-pill" data-filter="limited" type="button">
-            Limited
-          </button>
-          <button class="filter-pill" data-filter="semi_limited" type="button">
-            Semi-limited
-          </button>
-          <span class="result-count" id="resultCount">0 cards</span>
+      <div class="notice hidden" id="setupNotice" role="status"></div>
+
+      <section class="restriction-section" aria-labelledby="forbiddenHeading">
+        <div class="restriction-heading">
+          <div class="restriction-title">
+            <span class="status-dot forbidden"></span>
+            <div>
+              <h2 id="forbiddenHeading">Forbidden</h2>
+              <p>0 copies per Deck</p>
+            </div>
+          </div>
+          <strong class="restriction-count" id="forbiddenCount">0</strong>
         </div>
+        <div class="card-grid" id="forbiddenGrid" aria-live="polite"></div>
+      </section>
 
-        <div class="notice hidden" id="setupNotice" role="status"></div>
-        <div class="card-grid" id="cardGrid" aria-live="polite"></div>
+      <section class="restriction-section" aria-labelledby="limitedHeading">
+        <div class="restriction-heading">
+          <div class="restriction-title">
+            <span class="status-dot limited"></span>
+            <div>
+              <h2 id="limitedHeading">Limited</h2>
+              <p>1 copy per Deck</p>
+            </div>
+          </div>
+          <strong class="restriction-count" id="limitedCount">0</strong>
+        </div>
+        <div class="card-grid" id="limitedGrid" aria-live="polite"></div>
+      </section>
+
+      <section class="restriction-section" aria-labelledby="semiLimitedHeading">
+        <div class="restriction-heading">
+          <div class="restriction-title">
+            <span class="status-dot semi-limited"></span>
+            <div>
+              <h2 id="semiLimitedHeading">Semi-Limited</h2>
+              <p>2 copies per Deck</p>
+            </div>
+          </div>
+          <strong class="restriction-count" id="semiLimitedCount">0</strong>
+        </div>
+        <div class="card-grid" id="semiLimitedGrid" aria-live="polite"></div>
       </section>
     </main>
 

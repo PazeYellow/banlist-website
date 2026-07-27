@@ -10,13 +10,12 @@ const CONFIGURED =
 const state = {
   entries: [],
   meta: {
-    title: "The cards that shape the format.",
+    title: "Banlist",
     description:
-      "A clear, current view of every forbidden, limited, and semi-limited card in this format.",
+      "Forbidden, Limited, and Semi-Limited cards for this format.",
     effectiveDate: null,
     updatedAt: null,
   },
-  filter: "all",
   query: "",
   token: sessionStorage.getItem("duel-ledger-token") || "",
   account: null,
@@ -30,8 +29,9 @@ const state = {
 const $ = (selector) => document.querySelector(selector);
 
 const elements = {
-  cardGrid: $("#cardGrid"),
-  resultCount: $("#resultCount"),
+  forbiddenGrid: $("#forbiddenGrid"),
+  limitedGrid: $("#limitedGrid"),
+  semiLimitedGrid: $("#semiLimitedGrid"),
   setupNotice: $("#setupNotice"),
   listTitle: $("#listTitle"),
   listDescription: $("#listDescription"),
@@ -40,7 +40,6 @@ const elements = {
   forbiddenCount: $("#forbiddenCount"),
   limitedCount: $("#limitedCount"),
   semiLimitedCount: $("#semiLimitedCount"),
-  totalCount: $("#totalCount"),
   listSearch: $("#listSearch"),
   adminButton: $("#adminButton"),
   adminDock: $("#adminDock"),
@@ -123,13 +122,20 @@ function formatDate(value, fallback = "Not announced") {
 }
 
 function setLoading() {
-  elements.cardGrid.replaceChildren();
-  const loading = document.createElement("div");
-  loading.className = "loading-state";
-  const spinner = document.createElement("span");
-  spinner.setAttribute("aria-label", "Loading banlist");
-  loading.append(spinner);
-  elements.cardGrid.append(loading);
+  [
+    elements.forbiddenGrid,
+    elements.limitedGrid,
+    elements.semiLimitedGrid,
+  ].forEach((grid, index) => {
+    grid.replaceChildren();
+    const loading = document.createElement("div");
+    loading.className = "loading-state";
+    const spinner = document.createElement("span");
+    if (index === 0) spinner.setAttribute("aria-label", "Loading banlist");
+    else spinner.setAttribute("aria-hidden", "true");
+    loading.append(spinner);
+    grid.append(loading);
+  });
 }
 
 function showSetupNotice(message) {
@@ -294,46 +300,50 @@ function createCard(entry) {
 function renderBanlist() {
   const query = state.query.trim().toLocaleLowerCase();
   const visible = state.entries.filter((entry) => {
-    const matchesFilter = state.filter === "all" || entry.status === state.filter;
-    const matchesQuery =
+    return (
       !query ||
       entry.name.toLocaleLowerCase().includes(query) ||
-      (entry.note || "").toLocaleLowerCase().includes(query);
-    return matchesFilter && matchesQuery;
+      (entry.note || "").toLocaleLowerCase().includes(query)
+    );
   });
 
   const count = (status) => state.entries.filter((entry) => entry.status === status).length;
   elements.forbiddenCount.textContent = count("forbidden");
   elements.limitedCount.textContent = count("limited");
   elements.semiLimitedCount.textContent = count("semi_limited");
-  elements.totalCount.textContent = state.entries.length;
-  elements.resultCount.textContent = `${visible.length} ${visible.length === 1 ? "card" : "cards"}`;
-  elements.cardGrid.replaceChildren();
 
-  if (!visible.length) {
+  renderRestrictionGrid(
+    elements.forbiddenGrid,
+    visible.filter((entry) => entry.status === "forbidden"),
+    query ? "No matching Forbidden cards." : "No Forbidden cards.",
+  );
+  renderRestrictionGrid(
+    elements.limitedGrid,
+    visible.filter((entry) => entry.status === "limited"),
+    query ? "No matching Limited cards." : "No Limited cards.",
+  );
+  renderRestrictionGrid(
+    elements.semiLimitedGrid,
+    visible.filter((entry) => entry.status === "semi_limited"),
+    query ? "No matching Semi-Limited cards." : "No Semi-Limited cards.",
+  );
+}
+
+function renderRestrictionGrid(grid, entries, emptyMessage) {
+  grid.replaceChildren();
+  if (!entries.length) {
     const empty = document.createElement("div");
     empty.className = "empty-state";
     const copy = document.createElement("p");
-    const heading = document.createElement("strong");
-    heading.textContent = state.entries.length
-      ? "No matching cards"
-      : "The list is ready for its first card";
-    copy.append(
-      heading,
-      document.createTextNode(
-        state.entries.length
-          ? "Try a different search or filter."
-          : "An Admin or Owner can sign in and start building the banlist.",
-      ),
-    );
+    copy.textContent = emptyMessage;
     empty.append(copy);
-    elements.cardGrid.append(empty);
+    grid.append(empty);
     return;
   }
 
   const fragment = document.createDocumentFragment();
-  visible.forEach((entry) => fragment.append(createCard(entry)));
-  elements.cardGrid.append(fragment);
+  entries.forEach((entry) => fragment.append(createCard(entry)));
+  grid.append(fragment);
 }
 
 function setAccountSession(token, account) {
@@ -744,16 +754,6 @@ function openDetails() {
   showMessage(elements.detailsError, "");
   elements.detailsDialog.showModal();
 }
-
-document.querySelectorAll(".filter-pill").forEach((button) => {
-  button.addEventListener("click", () => {
-    state.filter = button.dataset.filter;
-    document.querySelectorAll(".filter-pill").forEach((pill) => {
-      pill.classList.toggle("active", pill === button);
-    });
-    renderBanlist();
-  });
-});
 
 elements.listSearch.addEventListener("input", () => {
   state.query = elements.listSearch.value;

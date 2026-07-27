@@ -36,10 +36,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   overflow-x: hidden;
-  background:
-    radial-gradient(circle at 84% 4%, rgba(91, 109, 181, 0.13), transparent 28rem),
-    radial-gradient(circle at 10% 32%, rgba(202, 144, 52, 0.08), transparent 24rem),
-    var(--navy-950);
+  background: var(--navy-950);
   color: var(--ink);
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -95,6 +92,7 @@ a {
   width: min(1180px, calc(100% - 40px));
   margin: 0 auto;
   padding: 26px 0;
+  border-bottom: 1px solid var(--line);
 }
 
 .brand {
@@ -559,6 +557,141 @@ main {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 18px;
+}
+
+.banlist-page {
+  padding-top: 56px;
+}
+
+.list-intro {
+  display: flex;
+  gap: 48px;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 54px;
+  padding-bottom: 38px;
+  border-bottom: 1px solid var(--line);
+}
+
+.list-intro-copy {
+  max-width: 680px;
+}
+
+.list-intro .eyebrow {
+  margin-bottom: 12px;
+}
+
+.list-intro h1 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(48px, 8vw, 78px);
+  font-weight: 500;
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+
+.list-intro-copy > p:last-child {
+  max-width: 620px;
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.list-tools {
+  display: flex;
+  width: min(360px, 100%);
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.list-date {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.list-date span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.list-date small {
+  color: var(--faint);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.list-date strong {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.list-tools .search-box {
+  width: 100%;
+}
+
+.restriction-section {
+  margin-bottom: 68px;
+  scroll-margin-top: 24px;
+}
+
+.restriction-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.restriction-title {
+  display: flex;
+  gap: 13px;
+  align-items: center;
+}
+
+.restriction-title h2 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+}
+
+.restriction-title p {
+  margin: 4px 0 0;
+  color: var(--faint);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.restriction-count {
+  display: grid;
+  min-width: 38px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.restriction-section .empty-state,
+.restriction-section .loading-state {
+  min-height: 132px;
+}
+
+.restriction-section .empty-state p {
+  margin: 0;
+  color: var(--faint);
+  font-size: 11px;
 }
 
 .ban-card {
@@ -1647,6 +1780,22 @@ footer a {
     width: min(100% - 28px, 1180px);
   }
 
+  .banlist-page {
+    padding-top: 38px;
+  }
+
+  .list-intro {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 30px;
+    margin-bottom: 46px;
+    padding-bottom: 30px;
+  }
+
+  .list-tools {
+    width: 100%;
+  }
+
   .header-actions > a {
     display: none;
   }
@@ -1763,6 +1912,14 @@ footer a {
 
   .hero-copy {
     padding: 48px 22px 42px;
+  }
+
+  .list-intro h1 {
+    font-size: 52px;
+  }
+
+  .restriction-title h2 {
+    font-size: 26px;
   }
 
   .hero-meta {

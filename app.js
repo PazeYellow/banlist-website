@@ -16,6 +16,7 @@ const state = {
     effectiveDate: null,
     updatedAt: null,
   },
+  category: "forbidden",
   token: sessionStorage.getItem("duel-ledger-token") || "",
   account: null,
   entryMode: "create",
@@ -28,14 +29,8 @@ const state = {
 const $ = (selector) => document.querySelector(selector);
 
 const elements = {
-  siteHeader: $("#siteHeader"),
-  forbiddenGrid: $("#forbiddenGrid"),
-  limitedGrid: $("#limitedGrid"),
-  semiLimitedGrid: $("#semiLimitedGrid"),
+  categoryGrid: $("#categoryGrid"),
   setupNotice: $("#setupNotice"),
-  forbiddenCount: $("#forbiddenCount"),
-  limitedCount: $("#limitedCount"),
-  semiLimitedCount: $("#semiLimitedCount"),
   adminButton: $("#adminButton"),
   adminDock: $("#adminDock"),
   accountEmail: $("#accountEmail"),
@@ -117,18 +112,13 @@ function formatDate(value, fallback = "Not announced") {
 }
 
 function setLoading() {
-  [elements.forbiddenGrid, elements.limitedGrid, elements.semiLimitedGrid].forEach(
-    (grid, index) => {
-      grid.replaceChildren();
-      const loading = document.createElement("div");
-      loading.className = "loading-state";
-      const spinner = document.createElement("span");
-      if (index === 0) spinner.setAttribute("aria-label", "Loading banlist");
-      else spinner.setAttribute("aria-hidden", "true");
-      loading.append(spinner);
-      grid.append(loading);
-    },
-  );
+  elements.categoryGrid.replaceChildren();
+  const loading = document.createElement("div");
+  loading.className = "loading-state";
+  const spinner = document.createElement("span");
+  spinner.setAttribute("aria-label", "Loading banlist");
+  loading.append(spinner);
+  elements.categoryGrid.append(loading);
 }
 
 function showSetupNotice(message) {
@@ -237,71 +227,31 @@ function createCard(entry) {
   imageWrap.className = "ban-card-image";
   imageWrap.append(imageWithFallback(entry.imageUrl, `${entry.name} card art`));
 
-  const badges = document.createElement("div");
-  badges.className = "card-badges";
-  const statusBadge = document.createElement("span");
-  statusBadge.className = `status-badge ${entry.status}`;
-  statusBadge.textContent = statusLabels[entry.status]?.label || entry.status;
-  badges.append(statusBadge);
-  if (entry.isCustom) {
-    const customBadge = document.createElement("span");
-    customBadge.className = "custom-badge";
-    customBadge.textContent = "Custom";
-    badges.append(customBadge);
-  }
-  imageWrap.append(badges);
-
   const body = document.createElement("div");
   body.className = "ban-card-body";
   const title = document.createElement("h3");
   title.textContent = entry.name;
-  const note = document.createElement("p");
-  note.className = "ban-card-note";
-  note.textContent = entry.note || "No additional ruling note.";
+  body.append(title);
 
-  const footer = document.createElement("div");
-  footer.className = "ban-card-footer";
-  const copies = document.createElement("span");
-  copies.textContent = statusLabels[entry.status]?.copies || "";
-  footer.append(copies);
   if (state.account && !state.account.mustChangePassword) {
     const editButton = document.createElement("button");
     editButton.className = "edit-card-button";
     editButton.type = "button";
     editButton.textContent = "Edit";
     editButton.addEventListener("click", () => openEditEntry(entry));
-    footer.append(editButton);
-  } else {
-    const source = document.createElement("span");
-    source.textContent = entry.isCustom ? "Community card" : "Official card";
-    footer.append(source);
+    body.append(editButton);
   }
 
-  body.append(title, note, footer);
   card.append(imageWrap, body);
   return card;
 }
 
 function renderBanlist() {
-  const count = (status) => state.entries.filter((entry) => entry.status === status).length;
-  elements.forbiddenCount.textContent = count("forbidden");
-  elements.limitedCount.textContent = count("limited");
-  elements.semiLimitedCount.textContent = count("semi_limited");
-
+  const label = statusLabels[state.category]?.label || "Banlist";
   renderRestrictionGrid(
-    elements.forbiddenGrid,
-    state.entries.filter((entry) => entry.status === "forbidden"),
-    "No Banned cards.",
-  );
-  renderRestrictionGrid(
-    elements.limitedGrid,
-    state.entries.filter((entry) => entry.status === "limited"),
-    "No Limited cards.",
-  );
-  renderRestrictionGrid(
-    elements.semiLimitedGrid,
-    state.entries.filter((entry) => entry.status === "semi_limited"),
-    "No Semi-Limited cards.",
+    elements.categoryGrid,
+    state.entries.filter((entry) => entry.status === state.category),
+    `No ${label} cards.`,
   );
 }
 
@@ -322,6 +272,58 @@ function renderRestrictionGrid(grid, entries, emptyMessage) {
   grid.append(fragment);
 }
 
+function updateCategory(category, animate = true) {
+  if (!Object.hasOwn(statusLabels, category)) return;
+  window.clearTimeout(elements.categoryGrid.switchTimer);
+
+  const applyCategory = () => {
+    state.category = category;
+    document.querySelectorAll(".category-tab").forEach((tab) => {
+      const active = tab.dataset.category === category;
+      tab.classList.toggle("active", active);
+      tab.setAttribute("aria-selected", String(active));
+      tab.tabIndex = active ? 0 : -1;
+    });
+
+    const url = new URL(window.location.href);
+    if (category === "forbidden") url.searchParams.delete("list");
+    else url.searchParams.set("list", category);
+    window.history.replaceState(null, "", url);
+    renderBanlist();
+    elements.categoryGrid.classList.remove("is-switching");
+  };
+
+  if (
+    animate &&
+    !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  ) {
+    elements.categoryGrid.classList.add("is-switching");
+    elements.categoryGrid.switchTimer = window.setTimeout(applyCategory, 110);
+  } else {
+    applyCategory();
+  }
+}
+
+function initializeCategoryTabs() {
+  const requested = new URLSearchParams(window.location.search).get("list");
+  const initial = Object.hasOwn(statusLabels, requested) ? requested : "forbidden";
+  const tabs = [...document.querySelectorAll(".category-tab")];
+  updateCategory(initial, false);
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => updateCategory(tab.dataset.category));
+    tab.addEventListener("keydown", (event) => {
+      if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+      event.preventDefault();
+      const currentIndex = tabs.indexOf(tab);
+      const direction = event.key === "ArrowRight" ? 1 : -1;
+      const next = tabs[(currentIndex + direction + tabs.length) % tabs.length];
+      next.focus();
+      updateCategory(next.dataset.category);
+    });
+  });
+}
+
 function setAccountSession(token, account) {
   state.token = token;
   state.account = account;
@@ -333,7 +335,7 @@ function setAccountSession(token, account) {
 
   const ready = Boolean(account && !account.mustChangePassword);
   elements.adminDock.classList.toggle("hidden", !ready);
-  elements.adminButton.textContent = account ? "Admin panel" : "Admin login";
+  elements.adminButton.textContent = account ? "Panel" : "Admin";
   elements.manageAccessButton.classList.toggle("hidden", account?.role !== "owner");
   if (account) {
     elements.accountEmail.textContent = account.email;
@@ -1001,6 +1003,7 @@ elements.copyTemporaryPassword.addEventListener("click", async () => {
   }
 });
 
+initializeCategoryTabs();
 loadBanlist();
 restoreSession();
 window.setInterval(() => {

@@ -7,53 +7,54 @@
       name="description"
       content="A community Yu-Gi-Oh! forbidden and limited card list."
     />
-    <meta name="theme-color" content="#0a1020" />
+    <meta name="theme-color" content="#f7f7f5" />
     <title>Banlist</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <header class="site-header compact-header" id="siteHeader">
-      <span class="sr-only">Banlist controls</span>
-      <nav class="header-actions" aria-label="Main navigation">
-        <button class="button button-ghost" id="adminButton" type="button">
-          Admin login
-        </button>
-      </nav>
-    </header>
-
-    <main class="board-page" id="top">
-      <h1>Banlist</h1>
-
-      <div class="notice hidden" id="setupNotice" role="status"></div>
-
-      <div class="banlist-columns">
-        <section class="banlist-column banned-column" aria-labelledby="bannedHeading">
-          <div class="column-label">
-            <h2 id="bannedHeading">Banned</h2>
-            <span class="sr-only"><strong id="forbiddenCount">0</strong> cards</span>
-          </div>
-          <div class="column-card-grid" id="forbiddenGrid" aria-live="polite"></div>
-        </section>
-
-        <section class="banlist-column limited-column" aria-labelledby="limitedHeading">
-          <div class="column-label">
-            <h2 id="limitedHeading">Limited</h2>
-            <span class="sr-only"><strong id="limitedCount">0</strong> cards</span>
-          </div>
-          <div class="column-card-grid" id="limitedGrid" aria-live="polite"></div>
-        </section>
-
-        <section
-          class="banlist-column semi-limited-column"
-          aria-labelledby="semiLimitedHeading"
-        >
-          <div class="column-label">
-            <h2 id="semiLimitedHeading">Semi-Limited</h2>
-            <span class="sr-only"><strong id="semiLimitedCount">0</strong> cards</span>
-          </div>
-          <div class="column-card-grid" id="semiLimitedGrid" aria-live="polite"></div>
-        </section>
-      </div>
+    <main class="single-page" id="top">
+      <section class="single-banlist" aria-labelledby="pageTitle">
+        <h1 id="pageTitle">Banlist</h1>
+        <div class="category-tabs" role="tablist" aria-label="Banlist category">
+          <button
+            class="category-tab active"
+            data-category="forbidden"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            aria-controls="categoryGrid"
+          >
+            Banned
+          </button>
+          <button
+            class="category-tab"
+            data-category="limited"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="categoryGrid"
+          >
+            Limited
+          </button>
+          <button
+            class="category-tab"
+            data-category="semi_limited"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="categoryGrid"
+          >
+            Semi-Limited
+          </button>
+        </div>
+        <div class="notice hidden" id="setupNotice" role="status"></div>
+        <div
+          class="card-grid category-grid"
+          id="categoryGrid"
+          role="tabpanel"
+          aria-live="polite"
+        ></div>
+      </section>
     </main>
 
     <aside class="admin-dock hidden" id="adminDock" aria-label="Admin controls">
@@ -66,7 +67,7 @@
         </p>
       </div>
       <div class="admin-dock-actions">
-        <button class="button button-secondary" id="editDetailsButton" type="button">
+        <button class="button button-secondary hidden" id="editDetailsButton" type="button">
           List details
         </button>
         <button class="button button-secondary hidden" id="manageAccessButton" type="button">
@@ -90,16 +91,14 @@
       </div>
     </aside>
 
-    <footer class="hidden">
+    <footer class="simple-footer">
       <p>
-        Card data and images provided by
+        Cards by
         <a href="https://ygoprodeck.com/api-guide/" target="_blank" rel="noreferrer">
           YGOPRODeck
         </a>.
       </p>
-      <p>
-        This fan project is not affiliated with or endorsed by Konami.
-      </p>
+      <button class="admin-entry-button" id="adminButton" type="button">Admin</button>
     </footer>
 
     <dialog class="modal modal-small" id="loginDialog">

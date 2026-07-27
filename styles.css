@@ -2395,6 +2395,235 @@ footer a {
   }
 }
 
+/* Simple one-page banlist */
+
+body {
+  background: #f7f7f5;
+  color: #171717;
+}
+
+.single-page {
+  display: grid;
+  min-height: calc(100vh - 76px);
+  padding: clamp(72px, 12vh, 128px) 20px 48px;
+  place-items: start center;
+}
+
+.single-banlist {
+  width: min(980px, 100%);
+}
+
+.single-banlist > h1 {
+  margin: 0 0 clamp(58px, 10vh, 96px);
+  color: #111;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 650;
+  line-height: 1;
+  text-align: center;
+}
+
+.category-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(10px, 2vw, 22px);
+  width: min(680px, 100%);
+  margin: 0 auto 28px;
+}
+
+.category-tab {
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 2px solid #181818;
+  border-radius: 5px;
+  background: #fff;
+  color: #181818;
+  cursor: pointer;
+  font-size: clamp(12px, 1.6vw, 15px);
+  font-weight: 650;
+  transition:
+    color 150ms ease,
+    background-color 150ms ease,
+    transform 150ms ease;
+}
+
+.category-tab:hover {
+  transform: translateY(-2px);
+}
+
+.category-tab:focus-visible {
+  outline: 3px solid #80aef8;
+  outline-offset: 3px;
+}
+
+.category-tab.active {
+  background: #181818;
+  color: #fff;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
+  gap: clamp(12px, 2vw, 20px);
+  width: 100%;
+  min-height: 210px;
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 110ms ease,
+    transform 110ms ease;
+}
+
+.category-grid.is-switching {
+  opacity: 0;
+  transform: translateY(5px);
+}
+
+.category-grid .ban-card {
+  overflow: hidden;
+  border: 2px solid #181818;
+  border-radius: 5px;
+  background: #fff;
+  box-shadow: none;
+}
+
+.category-grid .ban-card:hover {
+  border-color: #181818;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.category-grid .ban-card-image {
+  aspect-ratio: 0.69;
+  background: #ededeb;
+}
+
+.category-grid .ban-card-image img {
+  object-fit: contain;
+  object-position: center;
+}
+
+.category-grid .ban-card-image::after {
+  display: none;
+}
+
+.category-grid .image-fallback {
+  color: #777;
+}
+
+.category-grid .ban-card-body {
+  padding: 11px 10px 12px;
+  border-top: 1px solid #d9d9d6;
+  background: #fff;
+}
+
+.category-grid .ban-card-body h3 {
+  min-height: 32px;
+  color: #181818;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.category-grid .edit-card-button {
+  display: block;
+  margin: 9px auto 0;
+  border-color: #b7b7b3;
+  color: #333;
+}
+
+.category-grid .empty-state,
+.category-grid .loading-state {
+  grid-column: 1 / -1;
+  min-height: 210px;
+  border: 2px dashed #c9c9c4;
+  border-radius: 5px;
+  background: #fff;
+  color: #666;
+}
+
+.single-banlist .notice {
+  width: min(680px, 100%);
+  margin: 0 auto 22px;
+  border-color: #d9c69c;
+  background: #fff8e7;
+  color: #58471d;
+}
+
+footer.simple-footer {
+  display: flex;
+  width: min(980px, calc(100% - 40px));
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 auto;
+  padding: 18px 0 30px;
+  border-top: 1px solid #d9d9d5;
+  color: #777;
+  font-size: 11px;
+}
+
+footer.simple-footer p {
+  margin: 0;
+}
+
+footer.simple-footer a {
+  text-underline-offset: 2px;
+}
+
+.admin-entry-button {
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: #777;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.admin-entry-button:hover {
+  color: #181818;
+}
+
+@media (max-width: 620px) {
+  .single-page {
+    min-height: calc(100vh - 96px);
+    padding: 58px 14px 34px;
+  }
+
+  .single-banlist > h1 {
+    margin-bottom: 54px;
+  }
+
+  .category-tabs {
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .category-tab {
+    min-height: 44px;
+    padding: 8px 5px;
+    font-size: 11px;
+  }
+
+  .category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .category-grid .ban-card-image {
+    aspect-ratio: 0.69;
+  }
+
+  footer.simple-footer {
+    width: calc(100% - 28px);
+    align-items: flex-start;
+    padding-bottom: 132px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

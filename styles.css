@@ -694,6 +694,198 @@ main {
   font-size: 11px;
 }
 
+.home-view {
+  display: grid;
+  min-height: 100svh;
+  place-items: center;
+  padding: 44px 0;
+  animation: page-enter 320ms ease-out both;
+}
+
+.home-panel {
+  width: min(680px, 100%);
+}
+
+.home-panel > h1 {
+  margin: 0 0 42px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(66px, 13vw, 112px);
+  font-weight: 500;
+  line-height: 0.9;
+  letter-spacing: -0.07em;
+  text-align: center;
+}
+
+.banlist-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.banlist-link {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  gap: 16px;
+  min-height: 92px;
+  align-items: center;
+  padding: 18px 22px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--navy-850);
+  color: var(--ink);
+  text-decoration: none;
+  transition:
+    transform 170ms ease,
+    border-color 170ms ease,
+    background 170ms ease;
+}
+
+.banlist-link:hover,
+.banlist-link:focus-visible {
+  border-color: var(--line-strong);
+  background: var(--navy-800);
+  outline: none;
+  transform: translateX(5px);
+}
+
+.forbidden-link:hover,
+.forbidden-link:focus-visible {
+  border-color: rgba(237, 91, 98, 0.42);
+}
+
+.limited-link:hover,
+.limited-link:focus-visible {
+  border-color: rgba(231, 185, 93, 0.42);
+}
+
+.semi-limited-link:hover,
+.semi-limited-link:focus-visible {
+  border-color: rgba(100, 169, 255, 0.42);
+}
+
+.banlist-link-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.banlist-link-copy strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 25px;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+
+.banlist-link-copy small {
+  color: var(--faint);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.banlist-link-count {
+  min-width: 28px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.banlist-link-arrow {
+  color: var(--faint);
+  font-size: 19px;
+  transition: transform 170ms ease;
+}
+
+.banlist-link:hover .banlist-link-arrow,
+.banlist-link:focus-visible .banlist-link-arrow {
+  transform: translateX(3px);
+}
+
+.list-view {
+  min-height: 70vh;
+  padding-top: 42px;
+  animation: page-enter 280ms ease-out both;
+}
+
+.back-link {
+  display: inline-flex;
+  margin-bottom: 42px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.back-link:hover,
+.back-link:focus-visible {
+  color: var(--ink);
+}
+
+.list-page-heading {
+  display: flex;
+  gap: 48px;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 30px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--line);
+}
+
+.list-page-heading .eyebrow {
+  margin-bottom: 11px;
+}
+
+.list-page-heading h1 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(48px, 8vw, 76px);
+  font-weight: 500;
+  line-height: 0.96;
+  letter-spacing: -0.055em;
+}
+
+.list-page-heading > div:first-child > p:last-child {
+  margin: 13px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.list-view > .card-grid {
+  margin-top: 22px;
+}
+
+.list-view .empty-state,
+.list-view .loading-state {
+  min-height: 220px;
+}
+
+.page-leaving .home-view,
+.page-leaving .list-view {
+  opacity: 0;
+  transform: translateY(-5px);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .ban-card {
   position: relative;
   min-width: 0;
@@ -1796,6 +1988,29 @@ footer a {
     width: 100%;
   }
 
+  .home-view {
+    min-height: 100svh;
+    padding: 32px 0;
+  }
+
+  .home-panel > h1 {
+    margin-bottom: 34px;
+  }
+
+  .list-view {
+    padding-top: 30px;
+  }
+
+  .back-link {
+    margin-bottom: 32px;
+  }
+
+  .list-page-heading {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 28px;
+  }
+
   .header-actions > a {
     display: none;
   }
@@ -1916,6 +2131,28 @@ footer a {
 
   .list-intro h1 {
     font-size: 52px;
+  }
+
+  .home-panel > h1 {
+    font-size: 72px;
+  }
+
+  .banlist-link {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    min-height: 82px;
+    padding: 15px 17px;
+  }
+
+  .banlist-link-copy strong {
+    font-size: 22px;
+  }
+
+  .banlist-link-count {
+    display: none;
+  }
+
+  .list-page-heading h1 {
+    font-size: 48px;
   }
 
   .restriction-title h2 {

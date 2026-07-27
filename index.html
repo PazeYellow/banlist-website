@@ -8,16 +8,16 @@
       content="A community Yu-Gi-Oh! forbidden and limited card list."
     />
     <meta name="theme-color" content="#0a1020" />
-    <title>Duel Ledger — Forbidden &amp; Limited List</title>
+    <title>Banlist</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <header class="site-header">
-      <a class="brand" href="#top" aria-label="Duel Ledger home">
+    <header class="site-header hidden" id="siteHeader">
+      <a class="brand" href="./" aria-label="Back to Banlist home">
         <span class="brand-mark" aria-hidden="true">DL</span>
         <span>
-          <strong>Duel Ledger</strong>
-          <small>Forbidden &amp; Limited</small>
+          <strong>Banlist</strong>
+          <small id="headerListName">Card restrictions</small>
         </span>
       </a>
 
@@ -28,82 +28,76 @@
       </nav>
     </header>
 
-    <main class="banlist-page" id="top">
-      <section class="list-intro">
-        <div class="list-intro-copy">
-          <p class="eyebrow">Current card restrictions</p>
-          <h1 id="listTitle">Banlist</h1>
-          <p id="listDescription">
-            Forbidden, Limited, and Semi-Limited cards for this format.
-          </p>
-        </div>
-
-        <div class="list-tools">
-          <div class="list-date">
-            <span>
-              <small>Effective</small>
-              <strong id="effectiveDate">Not announced</strong>
-            </span>
-            <span>
-              <small>Updated</small>
-              <strong id="updatedDate">—</strong>
-            </span>
-          </div>
-          <label class="search-box">
-            <span class="search-icon" aria-hidden="true"></span>
-            <span class="sr-only">Search the banlist</span>
-            <input
-              id="listSearch"
-              type="search"
-              placeholder="Search the list…"
-              autocomplete="off"
-            />
-          </label>
+    <main id="top">
+      <section class="home-view" id="homeView">
+        <div class="home-panel">
+          <h1>Banlist</h1>
+          <nav class="banlist-nav" aria-label="Choose a banlist">
+            <a class="banlist-link forbidden-link" href="./?list=forbidden">
+              <span class="status-dot forbidden"></span>
+              <span class="banlist-link-copy">
+                <strong>Banned</strong>
+                <small>0 copies per Deck</small>
+              </span>
+              <span class="banlist-link-count" id="forbiddenCount">—</span>
+              <span class="banlist-link-arrow" aria-hidden="true">→</span>
+            </a>
+            <a class="banlist-link limited-link" href="./?list=limited">
+              <span class="status-dot limited"></span>
+              <span class="banlist-link-copy">
+                <strong>Limited</strong>
+                <small>1 copy per Deck</small>
+              </span>
+              <span class="banlist-link-count" id="limitedCount">—</span>
+              <span class="banlist-link-arrow" aria-hidden="true">→</span>
+            </a>
+            <a class="banlist-link semi-limited-link" href="./?list=semi_limited">
+              <span class="status-dot semi-limited"></span>
+              <span class="banlist-link-copy">
+                <strong>Semi-Limited</strong>
+                <small>2 copies per Deck</small>
+              </span>
+              <span class="banlist-link-count" id="semiLimitedCount">—</span>
+              <span class="banlist-link-arrow" aria-hidden="true">→</span>
+            </a>
+          </nav>
         </div>
       </section>
 
-      <div class="notice hidden" id="setupNotice" role="status"></div>
-
-      <section class="restriction-section" aria-labelledby="forbiddenHeading">
-        <div class="restriction-heading">
-          <div class="restriction-title">
-            <span class="status-dot forbidden"></span>
-            <div>
-              <h2 id="forbiddenHeading">Forbidden</h2>
-              <p>0 copies per Deck</p>
-            </div>
+      <section class="list-view hidden" id="listView">
+        <a class="back-link" href="./">← All lists</a>
+        <div class="list-page-heading">
+          <div>
+            <p class="eyebrow">Banlist</p>
+            <h1 id="categoryTitle">Banned</h1>
+            <p id="categoryRule">0 copies per Deck</p>
           </div>
-          <strong class="restriction-count" id="forbiddenCount">0</strong>
-        </div>
-        <div class="card-grid" id="forbiddenGrid" aria-live="polite"></div>
-      </section>
-
-      <section class="restriction-section" aria-labelledby="limitedHeading">
-        <div class="restriction-heading">
-          <div class="restriction-title">
-            <span class="status-dot limited"></span>
-            <div>
-              <h2 id="limitedHeading">Limited</h2>
-              <p>1 copy per Deck</p>
+          <div class="list-tools">
+            <div class="list-date">
+              <span>
+                <small>Effective</small>
+                <strong id="effectiveDate">Not announced</strong>
+              </span>
+              <span>
+                <small>Updated</small>
+                <strong id="updatedDate">—</strong>
+              </span>
             </div>
+            <label class="search-box">
+              <span class="search-icon" aria-hidden="true"></span>
+              <span class="sr-only">Search this list</span>
+              <input
+                id="listSearch"
+                type="search"
+                placeholder="Search cards…"
+                autocomplete="off"
+              />
+            </label>
           </div>
-          <strong class="restriction-count" id="limitedCount">0</strong>
         </div>
-        <div class="card-grid" id="limitedGrid" aria-live="polite"></div>
-      </section>
 
-      <section class="restriction-section" aria-labelledby="semiLimitedHeading">
-        <div class="restriction-heading">
-          <div class="restriction-title">
-            <span class="status-dot semi-limited"></span>
-            <div>
-              <h2 id="semiLimitedHeading">Semi-Limited</h2>
-              <p>2 copies per Deck</p>
-            </div>
-          </div>
-          <strong class="restriction-count" id="semiLimitedCount">0</strong>
-        </div>
-        <div class="card-grid" id="semiLimitedGrid" aria-live="polite"></div>
+        <div class="notice hidden" id="setupNotice" role="status"></div>
+        <div class="card-grid" id="categoryGrid" aria-live="polite"></div>
       </section>
     </main>
 
@@ -141,7 +135,7 @@
       </div>
     </aside>
 
-    <footer>
+    <footer class="hidden" id="siteFooter">
       <p>
         Card data and images provided by
         <a href="https://ygoprodeck.com/api-guide/" target="_blank" rel="noreferrer">
@@ -306,7 +300,7 @@
           <label>
             Restriction
             <select id="entryStatus" required>
-              <option value="forbidden">Forbidden · 0 copies</option>
+              <option value="forbidden">Banned · 0 copies</option>
               <option value="limited">Limited · 1 copy</option>
               <option value="semi_limited">Semi-limited · 2 copies</option>
             </select>

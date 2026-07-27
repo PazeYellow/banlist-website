@@ -17,6 +17,7 @@ const state = {
     updatedAt: null,
   },
   query: "",
+  category: null,
   token: sessionStorage.getItem("duel-ledger-token") || "",
   account: null,
   entryMode: "create",
@@ -29,12 +30,15 @@ const state = {
 const $ = (selector) => document.querySelector(selector);
 
 const elements = {
-  forbiddenGrid: $("#forbiddenGrid"),
-  limitedGrid: $("#limitedGrid"),
-  semiLimitedGrid: $("#semiLimitedGrid"),
+  siteHeader: $("#siteHeader"),
+  siteFooter: $("#siteFooter"),
+  homeView: $("#homeView"),
+  listView: $("#listView"),
+  categoryGrid: $("#categoryGrid"),
+  categoryTitle: $("#categoryTitle"),
+  categoryRule: $("#categoryRule"),
+  headerListName: $("#headerListName"),
   setupNotice: $("#setupNotice"),
-  listTitle: $("#listTitle"),
-  listDescription: $("#listDescription"),
   effectiveDate: $("#effectiveDate"),
   updatedDate: $("#updatedDate"),
   forbiddenCount: $("#forbiddenCount"),
@@ -105,9 +109,15 @@ const elements = {
 };
 
 const statusLabels = {
-  forbidden: { label: "Forbidden", copies: "0 copies" },
+  forbidden: { label: "Banned", copies: "0 copies" },
   limited: { label: "Limited", copies: "1 copy" },
   semi_limited: { label: "Semi-limited", copies: "2 copies" },
+};
+
+const categoryDetails = {
+  forbidden: { title: "Banned", rule: "0 copies per Deck" },
+  limited: { title: "Limited", rule: "1 copy per Deck" },
+  semi_limited: { title: "Semi-Limited", rule: "2 copies per Deck" },
 };
 
 function formatDate(value, fallback = "Not announced") {
@@ -121,21 +131,60 @@ function formatDate(value, fallback = "Not announced") {
   }).format(date);
 }
 
+function configureView() {
+  const requested = new URLSearchParams(window.location.search).get("list");
+  state.category = Object.hasOwn(categoryDetails, requested) ? requested : null;
+  const isListPage = Boolean(state.category);
+
+  elements.homeView.classList.toggle("hidden", isListPage);
+  elements.listView.classList.toggle("hidden", !isListPage);
+  elements.siteHeader.classList.toggle("hidden", !isListPage);
+  elements.siteFooter.classList.toggle("hidden", !isListPage);
+  document.body.classList.toggle("is-home", !isListPage);
+  document.body.classList.toggle("is-list-page", isListPage);
+
+  if (isListPage) {
+    const details = categoryDetails[state.category];
+    elements.categoryTitle.textContent = details.title;
+    elements.categoryRule.textContent = details.rule;
+    elements.headerListName.textContent = details.title;
+    document.title = `${details.title} — Banlist`;
+  } else {
+    document.title = "Banlist";
+  }
+
+  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.querySelectorAll(".banlist-link, .back-link").forEach((link) => {
+      link.addEventListener("click", (event) => {
+        if (
+          event.defaultPrevented ||
+          event.button !== 0 ||
+          event.metaKey ||
+          event.ctrlKey ||
+          event.shiftKey ||
+          event.altKey
+        ) {
+          return;
+        }
+        event.preventDefault();
+        document.body.classList.add("page-leaving");
+        window.setTimeout(() => {
+          window.location.href = link.href;
+        }, 150);
+      });
+    });
+  }
+}
+
 function setLoading() {
-  [
-    elements.forbiddenGrid,
-    elements.limitedGrid,
-    elements.semiLimitedGrid,
-  ].forEach((grid, index) => {
-    grid.replaceChildren();
-    const loading = document.createElement("div");
-    loading.className = "loading-state";
-    const spinner = document.createElement("span");
-    if (index === 0) spinner.setAttribute("aria-label", "Loading banlist");
-    else spinner.setAttribute("aria-hidden", "true");
-    loading.append(spinner);
-    grid.append(loading);
-  });
+  if (!state.category) return;
+  elements.categoryGrid.replaceChildren();
+  const loading = document.createElement("div");
+  loading.className = "loading-state";
+  const spinner = document.createElement("span");
+  spinner.setAttribute("aria-label", "Loading banlist");
+  loading.append(spinner);
+  elements.categoryGrid.append(loading);
 }
 
 function showSetupNotice(message) {
@@ -219,8 +268,6 @@ async function loadBanlist({ silent = false } = {}) {
 }
 
 function renderMeta() {
-  elements.listTitle.textContent = state.meta.title;
-  elements.listDescription.textContent = state.meta.description;
   elements.effectiveDate.textContent = formatDate(state.meta.effectiveDate);
   elements.updatedDate.textContent = formatDate(state.meta.updatedAt, "No changes yet");
 }
@@ -312,20 +359,14 @@ function renderBanlist() {
   elements.limitedCount.textContent = count("limited");
   elements.semiLimitedCount.textContent = count("semi_limited");
 
+  if (!state.category) return;
+  const details = categoryDetails[state.category];
   renderRestrictionGrid(
-    elements.forbiddenGrid,
-    visible.filter((entry) => entry.status === "forbidden"),
-    query ? "No matching Forbidden cards." : "No Forbidden cards.",
-  );
-  renderRestrictionGrid(
-    elements.limitedGrid,
-    visible.filter((entry) => entry.status === "limited"),
-    query ? "No matching Limited cards." : "No Limited cards.",
-  );
-  renderRestrictionGrid(
-    elements.semiLimitedGrid,
-    visible.filter((entry) => entry.status === "semi_limited"),
-    query ? "No matching Semi-Limited cards." : "No Semi-Limited cards.",
+    elements.categoryGrid,
+    visible.filter((entry) => entry.status === state.category),
+    query
+      ? `No matching ${details.title} cards.`
+      : `No ${details.title} cards.`,
   );
 }
 
@@ -355,7 +396,7 @@ function setAccountSession(token, account) {
     elements.forcedPasswordDialog.close();
   }
 
-  const ready = Boolean(account && !account.mustChangePassword);
+  const ready = Boolean(account && !account.mustChangePassword && state.category);
   elements.adminDock.classList.toggle("hidden", !ready);
   elements.adminButton.textContent = account ? "Admin panel" : "Admin login";
   elements.manageAccessButton.classList.toggle("hidden", account?.role !== "owner");
@@ -1030,6 +1071,7 @@ elements.copyTemporaryPassword.addEventListener("click", async () => {
   }
 });
 
+configureView();
 renderMeta();
 loadBanlist();
 restoreSession();

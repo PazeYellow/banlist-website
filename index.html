@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A community Yu-Gi-Oh! forbidden and limited card list."
+    />
+    <meta name="theme-color" content="#0a1020" />
+    <title>Duel Ledger — Forbidden &amp; Limited List</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="noise" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Duel Ledger home">
+        <span class="brand-mark" aria-hidden="true">DL</span>
+        <span>
+          <strong>Duel Ledger</strong>
+          <small>Forbidden &amp; Limited</small>
+        </span>
+      </a>
+
+      <nav class="header-actions" aria-label="Main navigation">
+        <a href="#banlist">The list</a>
+        <button class="button button-ghost" id="adminButton" type="button">
+          Admin login
+        </button>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Community format · living ruleset</p>
+          <h1 id="listTitle">The cards that shape the format.</h1>
+          <p class="hero-description" id="listDescription">
+            A clear, current view of every forbidden, limited, and semi-limited
+            card in this format.
+          </p>
+          <div class="hero-meta">
+            <span>
+              <small>Effective</small>
+              <strong id="effectiveDate">Not announced</strong>
+            </span>
+            <span>
+              <small>Last revised</small>
+              <strong id="updatedDate">—</strong>
+            </span>
+          </div>
+        </div>
+
+        <div class="hero-art" aria-hidden="true">
+          <div class="orbit orbit-one"></div>
+          <div class="orbit orbit-two"></div>
+          <div class="card-silhouette card-back"></div>
+          <div class="card-silhouette card-front">
+            <span>F / L</span>
+          </div>
+          <p>Build carefully.<br />Duel boldly.</p>
+        </div>
+      </section>
+
+      <section class="stats" aria-label="Banlist summary">
+        <article>
+          <span class="status-dot forbidden"></span>
+          <div>
+            <strong id="forbiddenCount">0</strong>
+            <span>Forbidden</span>
+          </div>
+        </article>
+        <article>
+          <span class="status-dot limited"></span>
+          <div>
+            <strong id="limitedCount">0</strong>
+            <span>Limited</span>
+          </div>
+        </article>
+        <article>
+          <span class="status-dot semi-limited"></span>
+          <div>
+            <strong id="semiLimitedCount">0</strong>
+            <span>Semi-limited</span>
+          </div>
+        </article>
+        <article class="stats-total">
+          <span class="mini-label">Total listed</span>
+          <strong id="totalCount">0</strong>
+        </article>
+      </section>
+
+      <section class="banlist-section" id="banlist">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Card index</p>
+            <h2>Current restrictions</h2>
+          </div>
+          <label class="search-box">
+            <span class="search-icon" aria-hidden="true"></span>
+            <span class="sr-only">Search the banlist</span>
+            <input
+              id="listSearch"
+              type="search"
+              placeholder="Search the list…"
+              autocomplete="off"
+            />
+          </label>
+        </div>
+
+        <div class="filter-row" role="group" aria-label="Filter by status">
+          <button class="filter-pill active" data-filter="all" type="button">
+            All cards
+          </button>
+          <button class="filter-pill" data-filter="forbidden" type="button">
+            Forbidden
+          </button>
+          <button class="filter-pill" data-filter="limited" type="button">
+            Limited
+          </button>
+          <button class="filter-pill" data-filter="semi_limited" type="button">
+            Semi-limited
+          </button>
+          <span class="result-count" id="resultCount">0 cards</span>
+        </div>
+
+        <div class="notice hidden" id="setupNotice" role="status"></div>
+        <div class="card-grid" id="cardGrid" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <aside class="admin-dock hidden" id="adminDock" aria-label="Admin controls">
+      <div>
+        <span class="online-dot"></span>
+        <p>
+          Signed in as
+          <strong id="accountEmail">account@example.com</strong>
+          <span class="role-chip" id="accountRole">Admin</span>
+        </p>
+      </div>
+      <div class="admin-dock-actions">
+        <button class="button button-secondary" id="editDetailsButton" type="button">
+          List details
+        </button>
+        <button class="button button-secondary hidden" id="manageAccessButton" type="button">
+          Access <span class="pending-badge hidden" id="pendingBadge">0</span>
+        </button>
+        <button class="button button-secondary" id="accountButton" type="button">
+          Account
+        </button>
+        <button class="button button-primary" id="addCardButton" type="button">
+          <span aria-hidden="true">＋</span> Add card
+        </button>
+        <button
+          class="icon-button"
+          id="logoutButton"
+          type="button"
+          aria-label="Sign out"
+          title="Sign out"
+        >
+          ↗
+        </button>
+      </div>
+    </aside>
+
+    <footer>
+      <p>
+        Card data and images provided by
+        <a href="https://ygoprodeck.com/api-guide/" target="_blank" rel="noreferrer">
+          YGOPRODeck
+        </a>.
+      </p>
+      <p>
+        This fan project is not affiliated with or endorsed by Konami.
+      </p>
+    </footer>
+
+    <dialog class="modal modal-small" id="loginDialog">
+      <div class="modal-form">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">Restricted access</p>
+            <h2>Team access</h2>
+          </div>
+          <button class="icon-button close-button" type="button" data-close="loginDialog">
+            ×
+          </button>
+        </div>
+
+        <div class="auth-tabs" role="tablist" aria-label="Account access">
+          <button class="auth-tab active" data-auth-panel="signin" type="button">Sign in</button>
+          <button class="auth-tab" data-auth-panel="request" type="button">Request access</button>
+          <button class="auth-tab" data-auth-panel="reset" type="button">Forgot password</button>
+        </div>
+
+        <form id="loginForm" data-auth-content="signin">
+          <p class="form-intro">Owners and Admins sign in with email and password.</p>
+          <label>
+            Email
+            <input name="email" type="email" autocomplete="username" maxlength="254" required />
+          </label>
+          <label>
+            Password
+            <input
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              minlength="12"
+              maxlength="200"
+              required
+            />
+          </label>
+          <p class="form-error hidden" id="loginError" role="alert"></p>
+          <button class="button button-primary button-wide" type="submit">Sign in</button>
+        </form>
+
+        <form class="hidden" id="requestAccessForm" data-auth-content="request">
+          <p class="form-intro">
+            Choose your password now. An Owner must approve the account before it can sign in.
+          </p>
+          <label>
+            Email
+            <input name="email" type="email" autocomplete="email" maxlength="254" required />
+          </label>
+          <label>
+            Password
+            <input
+              name="password"
+              type="password"
+              autocomplete="new-password"
+              minlength="12"
+              maxlength="200"
+              required
+            />
+          </label>
+          <p class="field-hint">Use at least 12 characters and a unique password.</p>
+          <p class="form-error hidden" id="requestAccessError" role="alert"></p>
+          <p class="form-success hidden" id="requestAccessSuccess" role="status"></p>
+          <button class="button button-primary button-wide" type="submit">Send request</button>
+        </form>
+
+        <form class="hidden" id="resetRequestForm" data-auth-content="reset">
+          <p class="form-intro">
+            This sends an in-app ping to every Owner. An Owner can approve it and issue a
+            one-time temporary password.
+          </p>
+          <label>
+            Account email
+            <input name="email" type="email" autocomplete="email" maxlength="254" required />
+          </label>
+          <p class="form-error hidden" id="resetRequestError" role="alert"></p>
+          <p class="form-success hidden" id="resetRequestSuccess" role="status"></p>
+          <button class="button button-primary button-wide" type="submit">
+            Ping the Owners
+          </button>
+        </form>
+      </div>
+    </dialog>
+
+    <dialog class="modal modal-wide" id="entryDialog">
+      <form class="modal-form" id="entryForm">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">Banlist editor</p>
+            <h2 id="entryDialogTitle">Add a card</h2>
+          </div>
+          <button class="icon-button close-button" type="button" data-close="entryDialog">
+            ×
+          </button>
+        </div>
+
+        <div class="source-tabs" id="sourceTabs">
+          <button class="source-tab active" data-source="official" type="button">
+            Official card
+          </button>
+          <button class="source-tab" data-source="custom" type="button">
+            Custom card
+          </button>
+        </div>
+
+        <section id="officialPanel">
+          <label>
+            Find an official card
+            <div class="inline-search">
+              <input
+                id="officialSearch"
+                type="search"
+                placeholder="Try “Dark Magician”…"
+                autocomplete="off"
+              />
+              <span class="field-hint">Powered by YGOPRODeck</span>
+            </div>
+          </label>
+          <div class="official-results" id="officialResults">
+            <p class="search-prompt">Type at least 2 characters to search.</p>
+          </div>
+          <div class="selected-card hidden" id="selectedOfficial"></div>
+        </section>
+
+        <section class="hidden" id="customPanel">
+          <div class="form-grid">
+            <label>
+              Card name
+              <input
+                id="customName"
+                type="text"
+                minlength="1"
+                maxlength="120"
+                placeholder="Your custom card"
+              />
+            </label>
+            <label>
+              Direct image link
+              <input
+                id="customImageUrl"
+                type="url"
+                maxlength="2000"
+                placeholder="https://example.com/card.jpg"
+              />
+            </label>
+          </div>
+          <div class="image-preview" id="customPreview">
+            <span>Image preview</span>
+          </div>
+        </section>
+
+        <div class="entry-fields">
+          <label>
+            Restriction
+            <select id="entryStatus" required>
+              <option value="forbidden">Forbidden · 0 copies</option>
+              <option value="limited">Limited · 1 copy</option>
+              <option value="semi_limited">Semi-limited · 2 copies</option>
+            </select>
+          </label>
+          <label>
+            Admin note <span class="optional">(optional)</span>
+            <textarea
+              id="entryNote"
+              rows="3"
+              maxlength="300"
+              placeholder="Why this card is restricted…"
+            ></textarea>
+          </label>
+        </div>
+
+        <p class="form-error hidden" id="entryError" role="alert"></p>
+        <div class="modal-actions">
+          <button class="button button-danger hidden" id="deleteEntryButton" type="button">
+            Remove from list
+          </button>
+          <span class="action-spacer"></span>
+          <button class="button button-secondary" type="button" data-close="entryDialog">
+            Cancel
+          </button>
+          <button class="button button-primary" id="saveEntryButton" type="submit">
+            Add to list
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="modal" id="detailsDialog">
+      <form class="modal-form" id="detailsForm">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">Public information</p>
+            <h2>Edit list details</h2>
+          </div>
+          <button class="icon-button close-button" type="button" data-close="detailsDialog">
+            ×
+          </button>
+        </div>
+        <label>
+          List title
+          <input id="metaTitle" type="text" maxlength="100" required />
+        </label>
+        <label>
+          Short description
+          <textarea id="metaDescription" rows="3" maxlength="300" required></textarea>
+        </label>
+        <label>
+          Effective date
+          <input id="metaEffectiveDate" type="date" />
+        </label>
+        <p class="form-error hidden" id="detailsError" role="alert"></p>
+        <div class="modal-actions">
+          <span class="action-spacer"></span>
+          <button class="button button-secondary" type="button" data-close="detailsDialog">
+            Cancel
+          </button>
+          <button class="button button-primary" type="submit">Publish details</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="modal modal-wide" id="accessDialog">
+      <div class="modal-form">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">Owner controls</p>
+            <h2>Team access</h2>
+          </div>
+          <button class="icon-button close-button" type="button" data-close="accessDialog">
+            ×
+          </button>
+        </div>
+
+        <div class="request-panel">
+          <div class="access-section-heading">
+            <div>
+              <h3>Pending access requests</h3>
+              <p>New accounts always begin as Admins.</p>
+            </div>
+            <span class="count-chip" id="accountRequestCount">0</span>
+          </div>
+          <div class="access-list" id="accountRequestList"></div>
+        </div>
+
+        <div class="request-panel">
+          <div class="access-section-heading">
+            <div>
+              <h3>Password reset pings</h3>
+              <p>Approval creates a temporary password that is shown once.</p>
+            </div>
+            <span class="count-chip" id="resetRequestCount">0</span>
+          </div>
+          <div class="access-list" id="resetRequestList"></div>
+        </div>
+
+        <div class="role-columns">
+          <section>
+            <div class="access-section-heading">
+              <div>
+                <h3>Owners</h3>
+                <p>Approve access and password resets.</p>
+              </div>
+              <span class="count-chip" id="ownerCount">0</span>
+            </div>
+            <div class="access-list" id="ownerList"></div>
+          </section>
+          <section>
+            <div class="access-section-heading">
+              <div>
+                <h3>Admins</h3>
+                <p>Edit and publish the banlist.</p>
+              </div>
+              <span class="count-chip" id="adminCount">0</span>
+            </div>
+            <div class="access-list" id="adminList"></div>
+          </section>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="modal" id="accountDialog">
+      <div class="modal-form">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">My account</p>
+            <h2>Password &amp; session</h2>
+          </div>
+          <button class="icon-button close-button" type="button" data-close="accountDialog">
+            ×
+          </button>
+        </div>
+        <div class="account-summary">
+          <strong id="accountDialogEmail"></strong>
+          <span id="accountDialogRole"></span>
+        </div>
+        <div class="managed-owner-note hidden" id="managedOwnerNote">
+          This root Owner is managed by Cloudflare secrets. Change
+          <code>ROOT_OWNER_PASSWORD</code> in Cloudflare to update its password.
+        </div>
+        <form id="passwordForm">
+          <label>
+            Current password
+            <input
+              name="currentPassword"
+              type="password"
+              autocomplete="current-password"
+              minlength="12"
+              required
+            />
+          </label>
+          <label>
+            New password
+            <input
+              name="newPassword"
+              type="password"
+              autocomplete="new-password"
+              minlength="12"
+              maxlength="200"
+              required
+            />
+          </label>
+          <p class="form-error hidden" id="passwordError" role="alert"></p>
+          <button class="button button-primary button-wide" type="submit">
+            Update password
+          </button>
+        </form>
+      </div>
+    </dialog>
+
+    <dialog class="modal modal-small forced-modal" id="forcedPasswordDialog">
+      <form class="modal-form" id="forcedPasswordForm">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">Required security step</p>
+            <h2>Choose a new password</h2>
+          </div>
+        </div>
+        <p class="form-intro">
+          You signed in with a temporary password. Change it before accessing the
+          banlist editor.
+        </p>
+        <label>
+          Temporary password
+          <input
+            name="currentPassword"
+            type="password"
+            autocomplete="current-password"
+            minlength="12"
+            required
+          />
+        </label>
+        <label>
+          New password
+          <input
+            name="newPassword"
+            type="password"
+            autocomplete="new-password"
+            minlength="12"
+            maxlength="200"
+            required
+          />
+        </label>
+        <p class="form-error hidden" id="forcedPasswordError" role="alert"></p>
+        <button class="button button-primary button-wide" type="submit">
+          Change password and continue
+        </button>
+        <button class="button button-ghost button-wide" id="forcedLogoutButton" type="button">
+          Sign out instead
+        </button>
+      </form>
+    </dialog>
+
+    <dialog class="modal modal-small" id="temporaryPasswordDialog">
+      <div class="modal-form">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">Shown once</p>
+            <h2>Temporary password</h2>
+          </div>
+          <button
+            class="icon-button close-button"
+            type="button"
+            data-close="temporaryPasswordDialog"
+          >
+            ×
+          </button>
+        </div>
+        <p class="form-intro">
+          Send this to <strong id="temporaryPasswordEmail"></strong> using a secure
+          channel. They must change it immediately after login.
+        </p>
+        <div class="temporary-password-box">
+          <code id="temporaryPasswordValue"></code>
+          <button class="button button-secondary" id="copyTemporaryPassword" type="button">
+            Copy
+          </button>
+        </div>
+      </div>
+    </dialog>
+
+    <div class="toast-region" id="toastRegion" aria-live="polite"></div>
+
+    <script src="./config.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

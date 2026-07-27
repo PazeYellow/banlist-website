@@ -12,15 +12,8 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <header class="site-header hidden" id="siteHeader">
-      <a class="brand" href="./" aria-label="Back to Banlist home">
-        <span class="brand-mark" aria-hidden="true">DL</span>
-        <span>
-          <strong>Banlist</strong>
-          <small id="headerListName">Card restrictions</small>
-        </span>
-      </a>
-
+    <header class="site-header compact-header" id="siteHeader">
+      <span class="sr-only">Banlist controls</span>
       <nav class="header-actions" aria-label="Main navigation">
         <button class="button button-ghost" id="adminButton" type="button">
           Admin login
@@ -28,77 +21,39 @@
       </nav>
     </header>
 
-    <main id="top">
-      <section class="home-view" id="homeView">
-        <div class="home-panel">
-          <h1>Banlist</h1>
-          <nav class="banlist-nav" aria-label="Choose a banlist">
-            <a class="banlist-link forbidden-link" href="./?list=forbidden">
-              <span class="status-dot forbidden"></span>
-              <span class="banlist-link-copy">
-                <strong>Banned</strong>
-                <small>0 copies per Deck</small>
-              </span>
-              <span class="banlist-link-count" id="forbiddenCount">—</span>
-              <span class="banlist-link-arrow" aria-hidden="true">→</span>
-            </a>
-            <a class="banlist-link limited-link" href="./?list=limited">
-              <span class="status-dot limited"></span>
-              <span class="banlist-link-copy">
-                <strong>Limited</strong>
-                <small>1 copy per Deck</small>
-              </span>
-              <span class="banlist-link-count" id="limitedCount">—</span>
-              <span class="banlist-link-arrow" aria-hidden="true">→</span>
-            </a>
-            <a class="banlist-link semi-limited-link" href="./?list=semi_limited">
-              <span class="status-dot semi-limited"></span>
-              <span class="banlist-link-copy">
-                <strong>Semi-Limited</strong>
-                <small>2 copies per Deck</small>
-              </span>
-              <span class="banlist-link-count" id="semiLimitedCount">—</span>
-              <span class="banlist-link-arrow" aria-hidden="true">→</span>
-            </a>
-          </nav>
-        </div>
-      </section>
+    <main class="board-page" id="top">
+      <h1>Banlist</h1>
 
-      <section class="list-view hidden" id="listView">
-        <a class="back-link" href="./">← All lists</a>
-        <div class="list-page-heading">
-          <div>
-            <p class="eyebrow">Banlist</p>
-            <h1 id="categoryTitle">Banned</h1>
-            <p id="categoryRule">0 copies per Deck</p>
-          </div>
-          <div class="list-tools">
-            <div class="list-date">
-              <span>
-                <small>Effective</small>
-                <strong id="effectiveDate">Not announced</strong>
-              </span>
-              <span>
-                <small>Updated</small>
-                <strong id="updatedDate">—</strong>
-              </span>
-            </div>
-            <label class="search-box">
-              <span class="search-icon" aria-hidden="true"></span>
-              <span class="sr-only">Search this list</span>
-              <input
-                id="listSearch"
-                type="search"
-                placeholder="Search cards…"
-                autocomplete="off"
-              />
-            </label>
-          </div>
-        </div>
+      <div class="notice hidden" id="setupNotice" role="status"></div>
 
-        <div class="notice hidden" id="setupNotice" role="status"></div>
-        <div class="card-grid" id="categoryGrid" aria-live="polite"></div>
-      </section>
+      <div class="banlist-columns">
+        <section class="banlist-column banned-column" aria-labelledby="bannedHeading">
+          <div class="column-label">
+            <h2 id="bannedHeading">Banned</h2>
+            <span class="sr-only"><strong id="forbiddenCount">0</strong> cards</span>
+          </div>
+          <div class="column-card-grid" id="forbiddenGrid" aria-live="polite"></div>
+        </section>
+
+        <section class="banlist-column limited-column" aria-labelledby="limitedHeading">
+          <div class="column-label">
+            <h2 id="limitedHeading">Limited</h2>
+            <span class="sr-only"><strong id="limitedCount">0</strong> cards</span>
+          </div>
+          <div class="column-card-grid" id="limitedGrid" aria-live="polite"></div>
+        </section>
+
+        <section
+          class="banlist-column semi-limited-column"
+          aria-labelledby="semiLimitedHeading"
+        >
+          <div class="column-label">
+            <h2 id="semiLimitedHeading">Semi-Limited</h2>
+            <span class="sr-only"><strong id="semiLimitedCount">0</strong> cards</span>
+          </div>
+          <div class="column-card-grid" id="semiLimitedGrid" aria-live="polite"></div>
+        </section>
+      </div>
     </main>
 
     <aside class="admin-dock hidden" id="adminDock" aria-label="Admin controls">
@@ -135,7 +90,7 @@
       </div>
     </aside>
 
-    <footer class="hidden" id="siteFooter">
+    <footer class="hidden">
       <p>
         Card data and images provided by
         <a href="https://ygoprodeck.com/api-guide/" target="_blank" rel="noreferrer">

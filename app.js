@@ -16,8 +16,6 @@ const state = {
     effectiveDate: null,
     updatedAt: null,
   },
-  query: "",
-  category: null,
   token: sessionStorage.getItem("duel-ledger-token") || "",
   account: null,
   entryMode: "create",
@@ -31,20 +29,13 @@ const $ = (selector) => document.querySelector(selector);
 
 const elements = {
   siteHeader: $("#siteHeader"),
-  siteFooter: $("#siteFooter"),
-  homeView: $("#homeView"),
-  listView: $("#listView"),
-  categoryGrid: $("#categoryGrid"),
-  categoryTitle: $("#categoryTitle"),
-  categoryRule: $("#categoryRule"),
-  headerListName: $("#headerListName"),
+  forbiddenGrid: $("#forbiddenGrid"),
+  limitedGrid: $("#limitedGrid"),
+  semiLimitedGrid: $("#semiLimitedGrid"),
   setupNotice: $("#setupNotice"),
-  effectiveDate: $("#effectiveDate"),
-  updatedDate: $("#updatedDate"),
   forbiddenCount: $("#forbiddenCount"),
   limitedCount: $("#limitedCount"),
   semiLimitedCount: $("#semiLimitedCount"),
-  listSearch: $("#listSearch"),
   adminButton: $("#adminButton"),
   adminDock: $("#adminDock"),
   accountEmail: $("#accountEmail"),
@@ -114,12 +105,6 @@ const statusLabels = {
   semi_limited: { label: "Semi-limited", copies: "2 copies" },
 };
 
-const categoryDetails = {
-  forbidden: { title: "Banned", rule: "0 copies per Deck" },
-  limited: { title: "Limited", rule: "1 copy per Deck" },
-  semi_limited: { title: "Semi-Limited", rule: "2 copies per Deck" },
-};
-
 function formatDate(value, fallback = "Not announced") {
   if (!value) return fallback;
   const date = new Date(value.includes("T") ? value : `${value}T00:00:00`);
@@ -131,60 +116,19 @@ function formatDate(value, fallback = "Not announced") {
   }).format(date);
 }
 
-function configureView() {
-  const requested = new URLSearchParams(window.location.search).get("list");
-  state.category = Object.hasOwn(categoryDetails, requested) ? requested : null;
-  const isListPage = Boolean(state.category);
-
-  elements.homeView.classList.toggle("hidden", isListPage);
-  elements.listView.classList.toggle("hidden", !isListPage);
-  elements.siteHeader.classList.toggle("hidden", !isListPage);
-  elements.siteFooter.classList.toggle("hidden", !isListPage);
-  document.body.classList.toggle("is-home", !isListPage);
-  document.body.classList.toggle("is-list-page", isListPage);
-
-  if (isListPage) {
-    const details = categoryDetails[state.category];
-    elements.categoryTitle.textContent = details.title;
-    elements.categoryRule.textContent = details.rule;
-    elements.headerListName.textContent = details.title;
-    document.title = `${details.title} — Banlist`;
-  } else {
-    document.title = "Banlist";
-  }
-
-  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    document.querySelectorAll(".banlist-link, .back-link").forEach((link) => {
-      link.addEventListener("click", (event) => {
-        if (
-          event.defaultPrevented ||
-          event.button !== 0 ||
-          event.metaKey ||
-          event.ctrlKey ||
-          event.shiftKey ||
-          event.altKey
-        ) {
-          return;
-        }
-        event.preventDefault();
-        document.body.classList.add("page-leaving");
-        window.setTimeout(() => {
-          window.location.href = link.href;
-        }, 150);
-      });
-    });
-  }
-}
-
 function setLoading() {
-  if (!state.category) return;
-  elements.categoryGrid.replaceChildren();
-  const loading = document.createElement("div");
-  loading.className = "loading-state";
-  const spinner = document.createElement("span");
-  spinner.setAttribute("aria-label", "Loading banlist");
-  loading.append(spinner);
-  elements.categoryGrid.append(loading);
+  [elements.forbiddenGrid, elements.limitedGrid, elements.semiLimitedGrid].forEach(
+    (grid, index) => {
+      grid.replaceChildren();
+      const loading = document.createElement("div");
+      loading.className = "loading-state";
+      const spinner = document.createElement("span");
+      if (index === 0) spinner.setAttribute("aria-label", "Loading banlist");
+      else spinner.setAttribute("aria-hidden", "true");
+      loading.append(spinner);
+      grid.append(loading);
+    },
+  );
 }
 
 function showSetupNotice(message) {
@@ -258,18 +202,12 @@ async function loadBanlist({ silent = false } = {}) {
     state.entries = Array.isArray(payload.entries) ? payload.entries : [];
     state.meta = { ...state.meta, ...(payload.meta || {}) };
     elements.setupNotice.classList.add("hidden");
-    renderMeta();
     renderBanlist();
   } catch (error) {
     showSetupNotice(error.message);
     state.entries = [];
     renderBanlist();
   }
-}
-
-function renderMeta() {
-  elements.effectiveDate.textContent = formatDate(state.meta.effectiveDate);
-  elements.updatedDate.textContent = formatDate(state.meta.updatedAt, "No changes yet");
 }
 
 function imageWithFallback(url, alt) {
@@ -345,28 +283,25 @@ function createCard(entry) {
 }
 
 function renderBanlist() {
-  const query = state.query.trim().toLocaleLowerCase();
-  const visible = state.entries.filter((entry) => {
-    return (
-      !query ||
-      entry.name.toLocaleLowerCase().includes(query) ||
-      (entry.note || "").toLocaleLowerCase().includes(query)
-    );
-  });
-
   const count = (status) => state.entries.filter((entry) => entry.status === status).length;
   elements.forbiddenCount.textContent = count("forbidden");
   elements.limitedCount.textContent = count("limited");
   elements.semiLimitedCount.textContent = count("semi_limited");
 
-  if (!state.category) return;
-  const details = categoryDetails[state.category];
   renderRestrictionGrid(
-    elements.categoryGrid,
-    visible.filter((entry) => entry.status === state.category),
-    query
-      ? `No matching ${details.title} cards.`
-      : `No ${details.title} cards.`,
+    elements.forbiddenGrid,
+    state.entries.filter((entry) => entry.status === "forbidden"),
+    "No Banned cards.",
+  );
+  renderRestrictionGrid(
+    elements.limitedGrid,
+    state.entries.filter((entry) => entry.status === "limited"),
+    "No Limited cards.",
+  );
+  renderRestrictionGrid(
+    elements.semiLimitedGrid,
+    state.entries.filter((entry) => entry.status === "semi_limited"),
+    "No Semi-Limited cards.",
   );
 }
 
@@ -396,7 +331,7 @@ function setAccountSession(token, account) {
     elements.forcedPasswordDialog.close();
   }
 
-  const ready = Boolean(account && !account.mustChangePassword && state.category);
+  const ready = Boolean(account && !account.mustChangePassword);
   elements.adminDock.classList.toggle("hidden", !ready);
   elements.adminButton.textContent = account ? "Admin panel" : "Admin login";
   elements.manageAccessButton.classList.toggle("hidden", account?.role !== "owner");
@@ -796,11 +731,6 @@ function openDetails() {
   elements.detailsDialog.showModal();
 }
 
-elements.listSearch.addEventListener("input", () => {
-  state.query = elements.listSearch.value;
-  renderBanlist();
-});
-
 document.querySelectorAll("[data-close]").forEach((button) => {
   button.addEventListener("click", () => $(`#${button.dataset.close}`)?.close());
 });
@@ -1071,8 +1001,6 @@ elements.copyTemporaryPassword.addEventListener("click", async () => {
   }
 });
 
-configureView();
-renderMeta();
 loadBanlist();
 restoreSession();
 window.setInterval(() => {

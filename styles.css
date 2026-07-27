@@ -886,6 +886,154 @@ main {
   }
 }
 
+.compact-header {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  justify-content: flex-end;
+  border-bottom: 0;
+}
+
+.board-page {
+  width: min(1180px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 92px 0 100px;
+  animation: board-enter 300ms ease-out both;
+}
+
+.board-page > h1 {
+  margin: 0 0 92px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(50px, 7vw, 78px);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.055em;
+  text-align: center;
+}
+
+.board-page > .notice {
+  margin: -54px auto 42px;
+}
+
+.banlist-columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(30px, 6vw, 72px);
+  align-items: start;
+}
+
+.banlist-column {
+  min-width: 0;
+  animation: column-enter 340ms ease-out both;
+}
+
+.limited-column {
+  animation-delay: 60ms;
+}
+
+.semi-limited-column {
+  animation-delay: 120ms;
+}
+
+.column-label {
+  display: table;
+  min-width: 126px;
+  margin: 0 auto 22px;
+  padding: 10px 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--navy-850);
+  text-align: center;
+}
+
+.column-label h2 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.banned-column .column-label {
+  border-color: rgba(237, 91, 98, 0.4);
+}
+
+.limited-column .column-label {
+  border-color: rgba(231, 185, 93, 0.4);
+}
+
+.semi-limited-column .column-label {
+  border-color: rgba(100, 169, 255, 0.4);
+}
+
+.column-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.column-card-grid .ban-card {
+  border-radius: 12px;
+}
+
+.column-card-grid .ban-card-image {
+  aspect-ratio: 0.69;
+}
+
+.column-card-grid .ban-card-image img {
+  object-fit: cover;
+  object-position: center;
+}
+
+.column-card-grid .ban-card-body {
+  padding: 13px;
+}
+
+.column-card-grid .ban-card-body h3 {
+  min-height: 36px;
+  font-size: 15px;
+}
+
+.column-card-grid .ban-card-note {
+  display: none;
+}
+
+.column-card-grid .ban-card-footer {
+  margin-top: 11px;
+  padding-top: 10px;
+}
+
+.column-card-grid .empty-state,
+.column-card-grid .loading-state {
+  min-height: 180px;
+}
+
+.column-card-grid .empty-state p {
+  margin: 0;
+  color: var(--faint);
+  font-size: 10px;
+}
+
+@keyframes board-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes column-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .ban-card {
   position: relative;
   min-width: 0;
@@ -1976,6 +2124,24 @@ footer a {
     padding-top: 38px;
   }
 
+  .board-page {
+    width: min(100% - 28px, 1180px);
+    padding-top: 82px;
+  }
+
+  .board-page > h1 {
+    margin-bottom: 62px;
+  }
+
+  .banlist-columns {
+    grid-template-columns: 1fr;
+    gap: 60px;
+  }
+
+  .column-card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .list-intro {
     align-items: stretch;
     flex-direction: column;
@@ -2135,6 +2301,19 @@ footer a {
 
   .home-panel > h1 {
     font-size: 72px;
+  }
+
+  .board-page {
+    padding-bottom: 140px;
+  }
+
+  .board-page > h1 {
+    margin-bottom: 52px;
+    font-size: 54px;
+  }
+
+  .column-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .banlist-link {
